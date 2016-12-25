@@ -88,4 +88,21 @@ public final class PrefUtils {
         editor.apply();
     }
 
+    public static void setDataState(Context context, int state) {
+        String key = context.getString(R.string.pref_data_state);
+        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
+        editor.putInt(key, state);
+        editor.apply();
+    }
+
+    public static int DATA_STATE_OK = 0;
+    public static int DATA_STATE_LOADING = 1;
+    public static int DATA_STATE_ERROR = 2;
+
+    public static int getDataState(Context context) {
+        String key = context.getString(R.string.pref_data_state);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getInt(key, DATA_STATE_OK);
+    }
+
 }

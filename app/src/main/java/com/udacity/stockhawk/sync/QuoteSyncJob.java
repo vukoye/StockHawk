@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.widget.Toast;
 
 import com.udacity.stockhawk.data.Contract;
 import com.udacity.stockhawk.data.PrefUtils;
@@ -74,6 +73,9 @@ public final class QuoteSyncJob {
 
 
                 Stock stock = quotes.get(symbol);
+                if (stock == null) {
+                    continue;
+                }
                 StockQuote quote = stock.getQuote();
                 if (quote.getPrice() == null) {
                     continue;
@@ -116,9 +118,10 @@ public final class QuoteSyncJob {
 
             Intent dataUpdatedIntent = new Intent(ACTION_DATA_UPDATED);
             context.sendBroadcast(dataUpdatedIntent);
-
+            PrefUtils.setDataState(context, PrefUtils.DATA_STATE_OK);
         } catch (IOException exception) {
             Timber.e(exception, "Error fetching stock quotes");
+            PrefUtils.setDataState(context, PrefUtils.DATA_STATE_ERROR);
         }
     }
 

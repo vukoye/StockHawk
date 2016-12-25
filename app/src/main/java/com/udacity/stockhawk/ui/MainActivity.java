@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.LoaderManager;
@@ -50,6 +51,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     public void onClick(String symbol) {
         Timber.d("Symbol clicked: %s", symbol);
+        Intent intent = new Intent(this, DetailsActivity.class);
+        Uri stockUri = Contract.Quote.makeUriForStock(symbol);
+        intent.putExtra(DetailsActivity.STOCK_URI, stockUri);
+        startActivity(intent);
     }
 
     @Override
