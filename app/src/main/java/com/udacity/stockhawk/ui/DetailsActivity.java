@@ -14,10 +14,12 @@ import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+import com.github.mikephil.charting.utils.EntryXComparator;
 import com.udacity.stockhawk.R;
 import com.udacity.stockhawk.data.Contract;
 import com.udacity.stockhawk.data.PrefUtils;
@@ -28,6 +30,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -96,8 +99,9 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
             String[] val = rawData.split(", ", 2);
             calendar.setTimeInMillis(Long.parseLong(val[0]));
             Date date = calendar.getTime();
-            entries.add(new Entry(date.getTime(), Float.valueOf(val[1])));
+            entries.add(new Entry(date.getTime(), Float.parseFloat(val[1])));
         }
+        Collections.sort(entries, new EntryXComparator());
         String endDate = historyList[0].split(",")[0];
         String beginningDate = historyList[historyList.length - 1].split(",")[0];
         Date end = new Date(Long.parseLong(endDate));
@@ -105,23 +109,25 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
         DateFormat f = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, Locale.getDefault());
         Description description = new Description();
         description.setText(f.format(start) + " -- " + f.format(end));
+        description.setTextColor(getResources().getColor(R.color.colorAccent));
         LineDataSet dataSet = new LineDataSet(entries, cursor.getString(Contract.Quote.POSITION_SYMBOL));
         dataSet.setColor(getResources().getColor(R.color.colorPrimary));
         dataSet.setValueTextColor(getResources().getColor(R.color.colorAccent));
         mChart.setDescription(description);
         mChart.getLegend().setEnabled(true);
         mChart.setAutoScaleMinMaxEnabled(true);
-//        final XAxis xAxis = mChart.getXAxis();
-//        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-//        xAxis.setValueFormatter(new IAxisValueFormatter() {
-//            @Override
-//            public String getFormattedValue(float value, AxisBase axis) {
-//                Calendar calendar = Calendar.getInstance();
-//                calendar.setTimeInMillis((long) value);
-//                DateFormat f = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, Locale.getDefault());
-//                return f.format(calendar.getTime());
-//            }
-//        });
+        mChart.getAxisLeft().setDrawLabels(false);
+        final XAxis xAxis = mChart.getXAxis();
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setValueFormatter(new IAxisValueFormatter() {
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTimeInMillis((long) value);
+                DateFormat f = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, Locale.getDefault());
+                return f.format(calendar.getTime());
+            }
+        });
         LineData lineData = new LineData(dataSet);
         mChart.setData(lineData);
         mChart.setFitsSystemWindows(true);
