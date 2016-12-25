@@ -1,11 +1,14 @@
 package com.udacity.stockhawk.ui;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -20,6 +23,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.udacity.stockhawk.R;
+import com.udacity.stockhawk.ValidateStock;
+import com.udacity.stockhawk.ValidateStockReceiver;
 import com.udacity.stockhawk.data.Contract;
 import com.udacity.stockhawk.data.PrefUtils;
 import com.udacity.stockhawk.sync.QuoteSyncJob;
@@ -30,7 +35,7 @@ import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>,
         SwipeRefreshLayout.OnRefreshListener,
-        StockAdapter.StockAdapterOnClickHandler {
+        StockAdapter.StockAdapterOnClickHandler, ValidateStockReceiver.Receiver {
 
     private static final int STOCK_LOADER = 0;
     @BindView(R.id.recycler_view)
@@ -40,6 +45,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @BindView(R.id.error)
     TextView error;
     private StockAdapter adapter;
+    ValidateStockReceiver mReceiver;
 
     @Override
     public void onClick(String symbol) {
@@ -78,7 +84,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             }
         }).attachToRecyclerView(stockRecyclerView);
 
-
+        mReceiver = new ValidateStockReceiver(new Handler());
+        mReceiver.setReceiver(this);
     }
 
     private boolean networkUp() {
@@ -123,9 +130,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 String message = getString(R.string.toast_stock_added_no_connectivity, symbol);
                 Toast.makeText(this, message, Toast.LENGTH_LONG).show();
             }
-
-            PrefUtils.addStock(this, symbol);
-            QuoteSyncJob.syncImmediately(this);
+            Intent validateStockIntent = new Intent(this, ValidateStock.class);
+            validateStockIntent.putExtra(ValidateStock.STOCK_ID, symbol);
+            validateStockIntent.putExtra(ValidateStock.RECEIVER, mReceiver);
+            startService(validateStockIntent);
         }
     }
 
@@ -184,4 +192,17 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    public void onReceiveResult(int resultCode, Bundle resultData) {
+        if (resultCode == ValidateStock.STOCK_FOUND) {
+            String symbol = resultData.getString(ValidateStock.STOCK_ID);
+            PrefUtils.addStock(this, symbol);
+            QuoteSyncJob.syncImmediately(this);
+        } else {
+            swipeRefreshLayout.setRefreshing(false);
+            Toast.makeText(this, R.string.stock_not_exists, Toast.LENGTH_SHORT).show();
+        }
+    }
+
 }
