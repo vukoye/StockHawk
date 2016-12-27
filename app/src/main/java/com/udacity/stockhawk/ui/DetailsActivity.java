@@ -84,7 +84,6 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
             }
 
 
-
             showData(cursor);
         }
     }
@@ -102,29 +101,37 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
             entries.add(new Entry(date.getTime(), Float.parseFloat(val[1])));
         }
         Collections.sort(entries, new EntryXComparator());
+
         String endDate = historyList[0].split(",")[0];
         String beginningDate = historyList[historyList.length - 1].split(",")[0];
         Date end = new Date(Long.parseLong(endDate));
         Date start = new Date(Long.parseLong(beginningDate));
-        DateFormat f = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, Locale.getDefault());
+
+        DateFormat f = DateFormat.getDateInstance(DateFormat.SHORT,  Locale.getDefault());
         Description description = new Description();
-        description.setText(f.format(start) + " -- " + f.format(end));
+        description.setText(f.format(start) + " - " + f.format(end));
         description.setTextColor(getResources().getColor(R.color.colorAccent));
+        description.setEnabled(false); //disabling description for now
+        mChart.setDescription(description);
+
         LineDataSet dataSet = new LineDataSet(entries, cursor.getString(Contract.Quote.POSITION_SYMBOL));
         dataSet.setColor(getResources().getColor(R.color.colorPrimary));
         dataSet.setValueTextColor(getResources().getColor(R.color.colorAccent));
-        mChart.setDescription(description);
+
+
         mChart.getLegend().setEnabled(true);
         mChart.setAutoScaleMinMaxEnabled(true);
         mChart.getAxisLeft().setDrawLabels(false);
+
         final XAxis xAxis = mChart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setTextColor(getResources().getColor(R.color.colorPrimary));
         xAxis.setValueFormatter(new IAxisValueFormatter() {
             @Override
             public String getFormattedValue(float value, AxisBase axis) {
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTimeInMillis((long) value);
-                DateFormat f = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, Locale.getDefault());
+                DateFormat f = DateFormat.getDateInstance(DateFormat.SHORT, Locale.getDefault());
                 return f.format(calendar.getTime());
             }
         });

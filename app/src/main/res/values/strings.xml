@@ -35,5 +35,9 @@
     <string name="toast_no_connectivity">Will refresh when network available.</string>
     <string name="stock_not_exists">Stock does not exists.</string>
     <string name="cont_desc_add_stock">Add new Stock</string>
+    <string name="cont_desc_display_in_percent">Display in percent</string>
+    <string name="cont_desc_display_in_dollar">Display in dollar</string>
+
+    <string name="no_stock_informations">No stock informations</string>
 
 </resources>
