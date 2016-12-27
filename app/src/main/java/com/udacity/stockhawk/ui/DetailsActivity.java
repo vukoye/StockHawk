@@ -102,22 +102,13 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
         }
         Collections.sort(entries, new EntryXComparator());
 
-        String endDate = historyList[0].split(",")[0];
-        String beginningDate = historyList[historyList.length - 1].split(",")[0];
-        Date end = new Date(Long.parseLong(endDate));
-        Date start = new Date(Long.parseLong(beginningDate));
-
-        DateFormat f = DateFormat.getDateInstance(DateFormat.SHORT,  Locale.getDefault());
         Description description = new Description();
-        description.setText(f.format(start) + " - " + f.format(end));
-        description.setTextColor(getResources().getColor(R.color.colorAccent));
         description.setEnabled(false); //disabling description for now
         mChart.setDescription(description);
 
         LineDataSet dataSet = new LineDataSet(entries, cursor.getString(Contract.Quote.POSITION_SYMBOL));
         dataSet.setColor(getResources().getColor(R.color.colorPrimary));
         dataSet.setValueTextColor(getResources().getColor(R.color.colorAccent));
-
 
         mChart.getLegend().setEnabled(true);
         mChart.setAutoScaleMinMaxEnabled(true);
@@ -135,6 +126,7 @@ public class DetailsActivity extends AppCompatActivity implements LoaderManager.
                 return f.format(calendar.getTime());
             }
         });
+
         LineData lineData = new LineData(dataSet);
         mChart.setData(lineData);
         mChart.setFitsSystemWindows(true);
